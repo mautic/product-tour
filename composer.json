@@ -1,0 +1,18 @@
+{
+  "name": "dropsolid/trial-tours",
+  "description": "Trial tours Plugin",
+  "type": "mautic-plugin",
+  "keywords": [
+    "mautic",
+    "plugin",
+    "integration"
+  ],
+  "extra": {
+    "install-directory-name": "TrialToursBundle"
+  },
+  "require": {
+    "mautic/core-lib": "^5.2"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+}
