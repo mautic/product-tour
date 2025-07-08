@@ -1,6 +1,6 @@
 {
-  "name": "dropsolid/trial-tours",
-  "description": "Trial tours Plugin",
+  "name": "mautic/product-tour",
+  "description": "Product tour Plugin",
   "type": "mautic-plugin",
   "keywords": [
     "mautic",
@@ -8,11 +8,11 @@
     "integration"
   ],
   "extra": {
-    "install-directory-name": "TrialToursBundle"
+    "install-directory-name": "ProductTourBundle"
   },
   "require": {
     "mautic/core-lib": "^5.2"
   },
   "minimum-stability": "dev",
-  "prefer-stable": true,
+  "prefer-stable": true
 }
