@@ -1,8 +1,7 @@
 <?php
 
 return [
-    'name' => 'Trial tours',
-    'description' => 'Add tours to Mautic for the trials.',
+    'name' => 'ProductTour',
+    'description' => 'Add tours to Mautic.',
     'version' => '1.0',
-    'author' => 'Dropsolid',
 ];

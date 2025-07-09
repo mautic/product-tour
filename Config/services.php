@@ -15,6 +15,6 @@ return function (ContainerConfigurator $configurator): void {
     $excludes = [
     ];
 
-    $services->load('MauticPlugin\\TrialToursBundle\\', '../')
+    $services->load('MauticPlugin\\ProductTourBundle\\', '../')
       ->exclude('../{'.implode(',', array_merge(MauticCoreExtension::DEFAULT_EXCLUDES, $excludes)).'}');
 };
