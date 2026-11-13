@@ -2,6 +2,8 @@
 
 (function () {
 
+  const translate = key => Mautic.translate(`mautic.producttour.${key}`);
+
   /**
   * Resets all tours by clearing stored progress and restarting the current tour.
   *
@@ -35,14 +37,14 @@
   const dashboardTourSteps = [
     {
       id: 'dashboard1',
-      title: 'Welcome to Mautic',
-      text: 'This is your dashboard. Follow the tour to get started and learn how features work.',
+      title: translate('dashboard.welcome.title'),
+      text: translate('dashboard.welcome.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
-        { text: 'Next', action: () => window.currentTour.next() }
+        { text: translate('button.next'), action: () => window.currentTour.next() }
       ],
       advanceOn: {
         selector: 'a[data-menu-link="mautic_dashboard_index"]',
@@ -51,56 +53,56 @@
     },
     {
       id: 'dashboard2',
-      title: 'Filter the dashboard data',
-      text: 'By default, Mautic displays data from the past 30 days, but you can change it in the configuration. It applies to all widgets.',
+      title: translate('dashboard.filter.title'),
+      text: translate('dashboard.filter.text'),
       attachTo: {
         element: 'form[name="daterange"]',
         on: 'bottom'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
-        { text: 'Next', action: () => window.currentTour.next() }
+        { text: translate('button.back'), action: () => window.currentTour.back() },
+        { text: translate('button.next'), action: () => window.currentTour.next() }
       ],
       beforeShowPromise: () => lazyElement('form[name="daterange"]'),
     },
     {
       id: 'dashboard3',
-      title: 'See essential information using widgets',
-      text: 'These are the charts used to display data. As soon as information starts being collected, check them again.',
+      title: translate('dashboard.widgets.title'),
+      text: translate('dashboard.widgets.text'),
       attachTo: {
         element: '.std-toolbar.btn-group',
         on: 'bottom'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
-        { text: 'Next', action: () => window.currentTour.next() }
+        { text: translate('button.back'), action: () => window.currentTour.back() },
+        { text: translate('button.next'), action: () => window.currentTour.next() }
       ],
     },
     {
       id: 'dashboard4',
-      title: 'Navigate through Mautic',
-      text: 'The main menu allows you to easily access and explore its various features.',
+      title: translate('dashboard.navigation.title'),
+      text: translate('dashboard.navigation.text'),
       attachTo: {
         element: 'nav.nav-sidebar',
         on: 'right'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
-        { text: 'Next', action: () => window.currentTour.next() }
+        { text: translate('button.back'), action: () => window.currentTour.back() },
+        { text: translate('button.next'), action: () => window.currentTour.next() }
       ],
     },
     {
       id: 'dashboard5',
-      title: 'Connect tracking script',
-      text: 'To start collecting visitor data, go to the configuration and set up your tracking script.',
+      title: translate('dashboard.tracking.title'),
+      text: translate('dashboard.tracking.text'),
       attachTo: {
         element: '.navbar-right [data-toggle*="sidebar"]', // '#admin-menu'
         on: 'left' // 'bottom'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
+        { text: translate('button.back'), action: () => window.currentTour.back() },
         {
-          text: 'Go to Configuration',
+          text: translate('button.go_to_configuration'),
           action: function () {
             window.currentTour.complete();
             mQuery('a#mautic_config_index').click();
@@ -115,14 +117,14 @@
   const configTour = [
     {
       id: 'config1',
-      title: 'Configure visitor tracking',
-      text: 'On this page, you can manage the way your Mautic works, but first let\'s make sure we can track visitors.',
+      title: translate('configuration.visitor_tracking.title'),
+      text: translate('configuration.visitor_tracking.text'),
       attachTo: {
         element: 'a[href="#trackingconfig"]',
         on: 'right'
       },
       buttons: [{
-        text: 'Go to Tracking Settings',
+        text: translate('button.go_to_tracking_settings'),
         action: function () {
           window.currentTour.next();
           mQuery('a[href="#trackingconfig"]').click();
@@ -132,15 +134,15 @@
     },
     {
       id: 'config2',
-      title: 'Implement tracking on your website',
-      text: 'Copy this code and paste it at the end of the body tag in your website.',
+      title: translate('configuration.implement_tracking.title'),
+      text: translate('configuration.implement_tracking.text'),
       attachTo: {
         element: '#trackingconfig .panel-primary:first-child pre',
         on: 'bottom'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
-        { text: 'Next', action: () => window.currentTour.next() }
+        { text: translate('button.back'), action: () => window.currentTour.back() },
+        { text: translate('button.next'), action: () => window.currentTour.next() }
       ],
       beforeShowPromise: () => {
         // Using lazyElement with a 400ms delay
@@ -149,16 +151,16 @@
     },
     {
       id: 'config3',
-      title: 'Grow your list',
-      text: 'Once people start accessing your website, you\'ll find new visitors in your Contacts page.',
+      title: translate('configuration.grow_list.title'),
+      text: translate('configuration.grow_list.text'),
       attachTo: {
         element: 'a#mautic_contact_index',
         on: 'right'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
+        { text: translate('button.back'), action: () => window.currentTour.back() },
         {
-          text: 'Go to Contacts',
+          text: translate('button.go_to_contacts'),
           action: function () {
             window.currentTour.complete();
             mQuery('a#mautic_contact_index').click();
@@ -171,43 +173,43 @@
   const contactsTourSteps = [
     {
       id: 'contacts-step1',
-      title: 'Explore your contact database',
-      text: 'Once you\'ve implemented Mautic\'s tracking code, you will be able to see all the unidentified and identified visitors that are interacting with your website. To fill or extend this list, import your own contacts.',
+      title: translate('contacts.explore_database.title'),
+      text: translate('contacts.explore_database.text'),
       attachTo: {
         element: '.pull-left.page-header-title', // Direct selector
         on: 'right'
       },
       buttons: [
         {
-          text: 'Next',
+          text: translate('button.next'),
           action: () => window.currentTour.next()
         }
       ]
     },
     {
       id: 'contacts-step2',
-      title: 'Toggle anonymous contacts',
-      text: 'Mautic creates unidentified visitors, contacts that we don\'t have a name or email address for yet, based on their IP. Click to toggle between unidentified visitors (anonymous contacts) and known visitors (contacts) later.',
+      title: translate('contacts.toggle_anonymous.title'),
+      text: translate('contacts.toggle_anonymous.text'),
       attachTo: {
         element: '#anonymousLeadButton', // Direct selector
         on: 'left'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
-        { text: 'Next', action: () => window.currentTour.next() }
+        { text: translate('button.back'), action: () => window.currentTour.back() },
+        { text: translate('button.next'), action: () => window.currentTour.next() }
       ]
     },
     {
       id: 'contacts-step3',
-      title: 'Import your contacts',
-      text: 'Click on the arrow-button to open the menu and find "Import" to quickly bring leads or "Import history" to see previously imported contacts.',
+      title: translate('contacts.import.title'),
+      text: translate('contacts.import.text'),
       attachTo: {
         element: 'button.btn.btn-nospin.dropdown-toggle', // Direct selector
         on: 'left'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => window.currentTour.complete()
         }
       ]
@@ -218,27 +220,27 @@
   const segmentsOverviewTour = [
     {
       id: 'segmentsOverview1',
-      title: 'Understand contact segmentation',
-      text: "Segments are used to categorize your contacts into specific lists based on their attributes, behavior, or campaign participation.",
+      title: translate('segments.understand.title'),
+      text: translate('segments.understand.text'),
       attachTo: {
         element: 'h1.pull-left.page-header-title',
         on: 'right'
       },
-      buttons: [{ text: 'Next', action: () => window.currentTour.next() }]
+      buttons: [{ text: translate('button.next'), action: () => window.currentTour.next() }]
     },
     {
       id: 'segmentsOverview2',
-      title: 'Initiate segment creation',
-      text: 'Click "New" to add a new segment. For example, you can create the first to monitor contacts who visited your website\'s contact page.',
+      title: translate('segments.initiate_creation.title'),
+      text: translate('segments.initiate_creation.text'),
       attachTo: {
         element: '.page-header a[href*="segments/new"]',
         on: 'bottom'
       },
       // advanceOn: { selector: '.page-header a[href*="segments/new"]', event: 'click' }
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
+        { text: translate('button.back'), action: () => window.currentTour.back() },
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => window.currentTour.complete()
         }
       ]
@@ -248,54 +250,54 @@
   const segmentsNewTour = [
     {
       id: 'segmentsNew1',
-      title: 'Define internal name',
-      text: 'It will be visible only for you and other Mautic users in the segments page.',
+      title: translate('segments.internal_name.title'),
+      text: translate('segments.internal_name.text'),
       attachTo: {
         element: '#leadlist_name',
         on: 'right'
       },
-      buttons: [{ text: 'Next', action: () => window.currentTour.next() }],
+      buttons: [{ text: translate('button.next'), action: () => window.currentTour.next() }],
       beforeShowPromise: () => lazyElement('#leadlist_name')
     },
     {
       id: 'segmentsNew2',
-      title: 'Set customer-facing segment name',
-      text: 'Use this field to display another name to contacts. It\'d be useful in the preference center to allow people to manage their segment membership later.',
+      title: translate('segments.customer_facing_name.title'),
+      text: translate('segments.customer_facing_name.text'),
       attachTo: {
         element: '#leadlist_publicName',
         on: 'right'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
-        { text: 'Next', action: () => window.currentTour.next() }
+        { text: translate('button.back'), action: () => window.currentTour.back() },
+        { text: translate('button.next'), action: () => window.currentTour.next() }
       ]
     },
     {
       id: 'segmentsNew3',
-      title: 'Activate segment',
-      text: 'Make sure to put the segment as Active to use it later.',
+      title: translate('segments.activate.title'),
+      text: translate('segments.activate.text'),
       attachTo: {
         element: '#leadlist_isPublished_1',
         on: 'top'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
-        { text: 'Next', action: () => window.currentTour.next() }
+        { text: translate('button.back'), action: () => window.currentTour.back() },
+        { text: translate('button.next'), action: () => window.currentTour.next() }
       ]
     },
     {
       id: 'segmentsNew4',
-      title: 'Begin segment setup',
-      text: 'By adding filters, you can create dynamic segments, which add and remove contacts automatically. Otherwise, just skip this step to keep them static.',
+      title: translate('segments.begin_setup.title'),
+      text: translate('segments.begin_setup.text'),
       attachTo: {
         element: 'a[href="#filters"][role="tab"]',
         on: 'bottom'
       },
       // advanceOn: { selector: 'a[href="#filters"][role="tab"]', event: 'click' }
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
+        { text: translate('button.back'), action: () => window.currentTour.back() },
         {
-        text: 'Next',
+        text: translate('button.next'),
         action: function () {
           window.currentTour.next();
           mQuery('a[href="#filters"][role="tab"]').click();
@@ -304,16 +306,16 @@
     },
     {
       id: 'segmentsNew5',
-      title: 'Select segment criteria',
-      text: 'You can filter based on known information and behavior. For example, use "Visited X URL" to add contacts that accessed a specific page.',
+      title: translate('segments.select_criteria.title'),
+      text: translate('segments.select_criteria.text'),
       attachTo: {
         element: '#available_segment_filters_chosen',
         on: 'right'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
+        { text: translate('button.back'), action: () => window.currentTour.back() },
         {
-        text: 'Next',
+        text: translate('button.next'),
         action: function () {
           window.currentTour.next();
         }
@@ -322,30 +324,30 @@
     },
     {
       id: 'segmentsNew6',
-      title: 'Combine segment filters',
-      text: 'For multiple filters, select additional fields from the dropdown and specify whether the filters should use "AND" or "OR" expressions.',
+      title: translate('segments.combine_filters.title'),
+      text: translate('segments.combine_filters.text'),
       attachTo: {
         element: '#leadlist_filters .panel',
         on: 'top'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
-        { text: 'Next', action: () => window.currentTour.next() }
+        { text: translate('button.back'), action: () => window.currentTour.back() },
+        { text: translate('button.next'), action: () => window.currentTour.next() }
       ],
       beforeShowPromise: () => lazyElement('#leadlist_filters .panel')
     },
     {
       id: 'segmentsNew7',
-      title: 'Good to go',
-      text: 'You created a segment. Save it to finish.',
+      title: translate('segments.good_to_go.title'),
+      text: translate('segments.good_to_go.text'),
       attachTo: {
         element: '#leadlist_buttons_apply_toolbar',
         on: 'bottom'
       },
       buttons: [
-        { text: 'Back', action: () => window.currentTour.back() },
+        { text: translate('button.back'), action: () => window.currentTour.back() },
         {
-        text: 'Finish',
+        text: translate('button.finish'),
         action: () => {
           window.currentTour.complete();
         }
@@ -357,15 +359,15 @@
   const campaignsTour = [
     {
       id: 'campaigns1',
-      title: 'Welcome to your campaign headquarters',
-      text: "Here, you'll manage and power your marketing automation processes within Mautic.",
+      title: translate('campaigns.welcome.title'),
+      text: translate('campaigns.welcome.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -377,15 +379,15 @@
   const emailsTour = [
     {
       id: 'emails1',
-      title: 'Craft your email masterpieces',
-      text: 'Here, you can effortlessly create, customize, and track your email communications.',
+      title: translate('emails.craft.title'),
+      text: translate('emails.craft.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -397,15 +399,15 @@
   const marketingMessagesTour = [
     {
       id: 'marketingmessages1',
-      title: 'Your multi-channel messaging hub',
-      text: 'This is your go-to destination for crafting and managing personalized marketing messages across various channels at once. It allows you organize the sending for SMS, email, social media, and push notifications.',
+      title: translate('messages.hub.title'),
+      text: translate('messages.hub.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -417,15 +419,15 @@
   const focusItemsTour = [
     {
       id: 'focusitems1',
-      title: 'Capture attention with focus items',
-      text: "Focus items allow you to create pop-ups, modals, and banners designed to capture your visitors' attention and encourage specific actions, such as subscribing to a newsletter or completing a form.",
+      title: translate('focus.capture_attention.title'),
+      text: translate('focus.capture_attention.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -437,15 +439,15 @@
   const assetsTour = [
     {
       id: 'assets1',
-      title: 'Manage your digital treasures',
-      text: 'This is your central hub for managing all digital assets used in your marketing campaigns.',
+      title: translate('assets.manage.title'),
+      text: translate('assets.manage.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -457,15 +459,15 @@
   const formsTour = [
     {
       id: 'forms1',
-      title: 'Design your data collection tools',
-      text: 'Here, you can create and manage forms to capture valuable customer data effectively.',
+      title: translate('forms.design.title'),
+      text: translate('forms.design.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -477,15 +479,15 @@
   const landingPagesTour = [
     {
       id: 'landingpages1',
-      title: 'Create compelling landing pages',
-      text: "This is where you can design, customize, and optimize your landing pages with ease. Using Mautic's intuitive drag-and-drop builder, you can effortlessly add images, forms, and CTAs to capture leads and boost conversions.",
+      title: translate('landing_pages.create.title'),
+      text: translate('landing_pages.create.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -497,15 +499,15 @@
   const dynamicContentTour = [
     {
       id: 'dynamiccontent1',
-      title: 'Personalize your content dynamically',
-      text: 'Here, you can craft personalized experiences for your audience by delivering tailored content based on user behavior and preferences. Customize website content, emails, and landing pages dynamically to ensure each visitor receives relevant and engaging messages.',
+      title: translate('dynamic_content.personalize.title'),
+      text: translate('dynamic_content.personalize.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -517,15 +519,15 @@
   const pointActionsTour = [
     {
       id: 'pointactions1',
-      title: 'Set up automated responses',
-      text: 'Here, you can define and automate responses to user interactions within your marketing campaigns. Set up actions like sending follow-up emails, adjusting lead scores, or adding contacts to segments based on predefined conditions and triggers.',
+      title: translate('point_actions.automated_responses.title'),
+      text: translate('point_actions.automated_responses.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -537,15 +539,15 @@
   const pointTriggersTour = [
     {
       id: 'pointtriggers1',
-      title: 'Configure your marketing triggers',
-      text: 'Automate smaller workflows by configuring actions that respond to user behavior and events. These triggers activate based on interactions such as form submissions, email opens, or page visits, streamlining your marketing processes.',
+      title: translate('point_triggers.configure.title'),
+      text: translate('point_triggers.configure.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -557,15 +559,15 @@
   const pointGroupsTour = [
     {
       id: 'pointgroups1',
-      title: 'Organize your point strategies',
-      text: "Groups allow you to organize separate amount of points. They're useful to have control over strategies targeting several audiences and help you to differentiate engagement metrics for each.",
+      title: translate('point_groups.organize.title'),
+      text: translate('point_groups.organize.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -577,15 +579,15 @@
   const stagesTour = [
     {
       id: 'stages1',
-      title: 'Map out your customer journey',
-      text: 'Here, you can define and manage the various stages of the customer lifecycle, from initial contact to post-purchase engagement. By organizing leads into distinct stages, you can implement targeted marketing strategies, personalize communications, and analyze progression through the marketing funnel.',
+      title: translate('stages.map_journey.title'),
+      text: translate('stages.map_journey.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -597,15 +599,15 @@
   const reportsTour = [
     {
       id: 'reports1',
-      title: 'Gain insights from your data',
-      text: 'This section enables you to create, customize, and analyze a wide range of reports. Track key metrics such as campaign effectiveness, email engagement, lead generation, and more to gain valuable insights into your marketing performance.',
+      title: translate('reports.gain_insights.title'),
+      text: translate('reports.gain_insights.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
@@ -617,15 +619,15 @@
   const tagsTour = [
     {
       id: 'tags1',
-      title: 'Organize contacts with tags',
-      text: 'Tags are customizable labels you can apply to contacts within Mautic. They help streamline segmentation and targeted marketing. Here, you can create, edit, and manage tags, making it easier to filter and search for specific groups of contacts.',
+      title: translate('tags.organize_contacts.title'),
+      text: translate('tags.organize_contacts.text'),
       attachTo: {
         element: '.pull-left.page-header-title',
         on: 'right'
       },
       buttons: [
         {
-          text: 'Finish',
+          text: translate('button.finish'),
           action: () => {
             window.currentTour.complete();
           }
