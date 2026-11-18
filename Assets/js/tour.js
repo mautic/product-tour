@@ -7,6 +7,7 @@
    *
    * Pass the selectors in order of preference (newest markup first). The resolver
    * returns the first matching element that is actually visible, or null.
+   * Elements outside the viewport count as visible, so a step can scroll to them.
    *
    * @param {...string} selectors - CSS selectors to try, in order.
    * @returns {function(): (Element|null)}
@@ -15,7 +16,8 @@
     return function () {
       for (const selector of selectors) {
         for (const element of document.querySelectorAll(selector)) {
-          if (element.getClientRects().length > 0) {
+          // An element hidden with `visibility: hidden` still has layout boxes.
+          if (element.getClientRects().length > 0 && getComputedStyle(element).visibility === 'visible') {
             return element;
           }
         }
@@ -48,8 +50,70 @@
   // Link to the tracking settings: an in-page tab up to Mautic 7, its own page from Mautic 8.
   const trackingSettingsLink = firstVisible('a[href="#trackingconfig"]', 'a[href$="/config/edit/trackingconfig"]');
 
-  // The tracking code snippet: inside the tab pane up to Mautic 7, on its own page from Mautic 8.
-  const trackingSnippet = firstVisible('#trackingconfig .code-snippet', '#trackingconfig .panel-primary:first-child pre', 'form[name="config"] .code-snippet');
+  // The tracking code. From Mautic 7.2 it is split over two tabs, and the consent-managed
+  // tab holds two scripts which are both needed, so the whole visible tab is the target.
+  // Earlier versions have a single snippet.
+  const trackingSnippet = firstVisible(
+    '#tracking-snippet-consent',
+    '#tracking-snippet-full',
+    '#trackingconfig .code-snippet',
+    '#trackingconfig .panel-primary:first-child pre',
+    'form[name="config"] .code-snippet'
+  );
+
+  /**
+   * Opens the tracking settings from the first step of the config tour.
+   */
+  function goToTrackingSettings() {
+    if (trackingSnippet()) {
+      // Already there, for example after going back from the next step.
+      window.currentTour.next();
+      return;
+    }
+
+    const link = trackingSettingsLink();
+    if (!link) {
+      return;
+    }
+
+    if (link.getAttribute('href').startsWith('#')) {
+      // Up to Mautic 7 the tracking settings are a tab on the same page.
+      window.currentTour.next();
+    } else {
+      // From Mautic 8 each settings section is its own page. Following the link
+      // restarts this tour, so make sure it resumes on the next step.
+      sessionStorage.setItem('configTourStep', 'config2');
+    }
+    link.click();
+  }
+
+  /**
+   * Shepherd's Right Arrow shortcut moves to the next step without running the
+   * button's action. On the first config step that would skip opening the tracking
+   * settings, so the shortcut is routed through the same action as the button.
+   *
+   * @param {KeyboardEvent} event
+   */
+  function trackingSettingsShortcut(event) {
+    const step = window.currentTour && window.currentTour.getCurrentStep();
+    const inStep = event.target instanceof Element && event.target.closest('.shepherd-element');
+
+    if (event.key === 'ArrowRight' && inStep && step && step.id === 'config1') {
+      event.preventDefault();
+      event.stopPropagation();
+      goToTrackingSettings();
+    }
+  }
+
+  /**
+   * Steps which can only be resumed when their target is available.
+   *
+   * Each entry maps a step id to a check that receives the current path. When the
+   * check fails the tour starts from its first step instead of the stored one.
+   */
+  const resumeGuards = {
+    config2: (currentPath) => currentPath.split(/[?#]/)[0].endsWith('/config/edit/trackingconfig') || trackingSnippet() !== null,
+  };
 
   /**
   * Resets all tours by clearing stored progress and restarting the current tour.
@@ -172,32 +236,23 @@
       },
       buttons: [{
         text: 'Go to Tracking Settings',
-        action: function () {
-          const link = trackingSettingsLink();
-          if (!link) {
-            return;
-          }
-
-          if (link.getAttribute('href').startsWith('#')) {
-            // Up to Mautic 7 the tracking settings are a tab on the same page.
-            window.currentTour.next();
-          } else {
-            // From Mautic 8 each settings section is its own page. Following the link
-            // restarts this tour, so make sure it resumes on the next step.
-            sessionStorage.setItem('configTourStep', 'config2');
-          }
-          link.click();
-        }
+        action: goToTrackingSettings
       }],
       beforeShowPromise: () => lazyElement(trackingSettingsLink),
+      when: {
+        show: () => document.addEventListener('keydown', trackingSettingsShortcut, true),
+        hide: () => document.removeEventListener('keydown', trackingSettingsShortcut, true),
+        destroy: () => document.removeEventListener('keydown', trackingSettingsShortcut, true),
+      },
     },
     {
       id: 'config2',
       title: 'Implement tracking on your website',
-      text: 'Copy this code and paste it at the end of the body tag in your website.',
+      text: 'Copy the code from this section and paste it at the end of the body tag in your website. If it shows two scripts, you need both.',
       attachTo: {
         element: trackingSnippet,
-        on: 'bottom'
+        // The code is taller than most screens, so sit beside it instead of over it.
+        on: 'right'
       },
       buttons: [
         { text: 'Back', action: () => window.currentTour.back() },
@@ -804,7 +859,8 @@
       });
 
       const currentStep = sessionStorage.getItem(`${tourKey}Step`);
-      if (currentStep) {
+      const canResume = resumeGuards[currentStep];
+      if (currentStep && (!canResume || canResume(currentPath))) {
         window.currentTour.show(currentStep);
       } else {
         window.currentTour.start();
