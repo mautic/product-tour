@@ -3,6 +3,55 @@
 (function () {
 
   /**
+   * Builds a resolver for a step target that works across Mautic versions.
+   *
+   * Pass the selectors in order of preference (newest markup first). The resolver
+   * returns the first matching element that is actually visible, or null.
+   *
+   * @param {...string} selectors - CSS selectors to try, in order.
+   * @returns {function(): (Element|null)}
+   */
+  function firstVisible(...selectors) {
+    return function () {
+      for (const selector of selectors) {
+        for (const element of document.querySelectorAll(selector)) {
+          if (element.getClientRects().length > 0) {
+            return element;
+          }
+        }
+      }
+      return null;
+    };
+  }
+
+  /**
+   * Clicks an element with a native click.
+   *
+   * jQuery's .click() only runs jQuery handlers, which is not enough from Mautic 8
+   * onwards, where Bootstrap 5 tabs listen for native events.
+   *
+   * @param {string} selector - CSS selector of the element to click.
+   */
+  function clickElement(selector) {
+    const element = document.querySelector(selector);
+    if (element) {
+      element.click();
+    }
+  }
+
+  // The page title lost its `pull-left` class in Mautic 8.
+  const pageTitle = firstVisible('.page-header-title');
+
+  // The admin (cog) menu in the top bar, which contains the Configuration link.
+  const adminMenu = firstVisible('#admin-menu', '.navbar-right [data-toggle*="sidebar"]');
+
+  // Link to the tracking settings: an in-page tab up to Mautic 7, its own page from Mautic 8.
+  const trackingSettingsLink = firstVisible('a[href="#trackingconfig"]', 'a[href$="/config/edit/trackingconfig"]');
+
+  // The tracking code snippet: inside the tab pane up to Mautic 7, on its own page from Mautic 8.
+  const trackingSnippet = firstVisible('#trackingconfig .code-snippet', '#trackingconfig .panel-primary:first-child pre', 'form[name="config"] .code-snippet');
+
+  /**
   * Resets all tours by clearing stored progress and restarting the current tour.
   *
   * Use this function to debug from the beginning.
@@ -38,7 +87,7 @@
       title: 'Welcome to Mautic',
       text: 'This is your dashboard. Follow the tour to get started and learn how features work.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -94,8 +143,8 @@
       title: 'Connect tracking script',
       text: 'To start collecting visitor data, go to the configuration and set up your tracking script.',
       attachTo: {
-        element: '.navbar-right [data-toggle*="sidebar"]', // '#admin-menu'
-        on: 'left' // 'bottom'
+        element: adminMenu,
+        on: 'left'
       },
       buttons: [
         { text: 'Back', action: () => window.currentTour.back() },
@@ -103,11 +152,11 @@
           text: 'Go to Configuration',
           action: function () {
             window.currentTour.complete();
-            mQuery('a#mautic_config_index').click();
+            clickElement('a#mautic_config_index');
           }
         }
       ],
-      beforeShowPromise: () => lazyElement('.navbar-right [data-toggle*="sidebar"]'),
+      beforeShowPromise: () => lazyElement(adminMenu),
     },
   ];
 
@@ -118,24 +167,36 @@
       title: 'Configure visitor tracking',
       text: 'On this page, you can manage the way your Mautic works, but first let\'s make sure we can track visitors.',
       attachTo: {
-        element: 'a[href="#trackingconfig"]',
+        element: trackingSettingsLink,
         on: 'right'
       },
       buttons: [{
         text: 'Go to Tracking Settings',
         action: function () {
-          window.currentTour.next();
-          mQuery('a[href="#trackingconfig"]').click();
+          const link = trackingSettingsLink();
+          if (!link) {
+            return;
+          }
+
+          if (link.getAttribute('href').startsWith('#')) {
+            // Up to Mautic 7 the tracking settings are a tab on the same page.
+            window.currentTour.next();
+          } else {
+            // From Mautic 8 each settings section is its own page. Following the link
+            // restarts this tour, so make sure it resumes on the next step.
+            sessionStorage.setItem('configTourStep', 'config2');
+          }
+          link.click();
         }
       }],
-      beforeShowPromise: () => lazyElement('a[href="#trackingconfig"]'),
+      beforeShowPromise: () => lazyElement(trackingSettingsLink),
     },
     {
       id: 'config2',
       title: 'Implement tracking on your website',
       text: 'Copy this code and paste it at the end of the body tag in your website.',
       attachTo: {
-        element: '#trackingconfig .panel-primary:first-child pre',
+        element: trackingSnippet,
         on: 'bottom'
       },
       buttons: [
@@ -144,7 +205,7 @@
       ],
       beforeShowPromise: () => {
         // Using lazyElement with a 400ms delay
-        return lazyElement('#trackingconfig .panel-primary:first-child pre', 400);
+        return lazyElement(trackingSnippet, 400);
       },
     },
     {
@@ -161,7 +222,7 @@
           text: 'Go to Contacts',
           action: function () {
             window.currentTour.complete();
-            mQuery('a#mautic_contact_index').click();
+            clickElement('a#mautic_contact_index');
           }
         }],
     }
@@ -174,7 +235,7 @@
       title: 'Explore your contact database',
       text: 'Once you\'ve implemented Mautic\'s tracking code, you will be able to see all the unidentified and identified visitors that are interacting with your website. To fill or extend this list, import your own contacts.',
       attachTo: {
-        element: '.pull-left.page-header-title', // Direct selector
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -202,7 +263,7 @@
       title: 'Import your contacts',
       text: 'Click on the arrow-button to open the menu and find "Import" to quickly bring leads or "Import history" to see previously imported contacts.',
       attachTo: {
-        element: 'button.btn.btn-nospin.dropdown-toggle', // Direct selector
+        element: firstVisible('#page-list-actions', 'button.btn.btn-nospin.dropdown-toggle'),
         on: 'left'
       },
       buttons: [
@@ -221,7 +282,7 @@
       title: 'Understand contact segmentation',
       text: "Segments are used to categorize your contacts into specific lists based on their attributes, behavior, or campaign participation.",
       attachTo: {
-        element: 'h1.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [{ text: 'Next', action: () => window.currentTour.next() }]
@@ -231,7 +292,7 @@
       title: 'Initiate segment creation',
       text: 'Click "New" to add a new segment. For example, you can create the first to monitor contacts who visited your website\'s contact page.',
       attachTo: {
-        element: '.page-header a[href*="segments/new"]',
+        element: firstVisible('.page-header a[href*="segments/new"]', 'a#new[href*="segments/new"]'),
         on: 'bottom'
       },
       // advanceOn: { selector: '.page-header a[href*="segments/new"]', event: 'click' }
@@ -275,7 +336,7 @@
       title: 'Activate segment',
       text: 'Make sure to put the segment as Active to use it later.',
       attachTo: {
-        element: '#leadlist_isPublished_1',
+        element: firstVisible('#leadlist_isPublished_label', '#leadlist_isPublished_1'),
         on: 'top'
       },
       buttons: [
@@ -298,7 +359,7 @@
         text: 'Next',
         action: function () {
           window.currentTour.next();
-          mQuery('a[href="#filters"][role="tab"]').click();
+          clickElement('a[href="#filters"][role="tab"]');
         }
       }],
     },
@@ -360,7 +421,7 @@
       title: 'Welcome to your campaign headquarters',
       text: "Here, you'll manage and power your marketing automation processes within Mautic.",
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -380,7 +441,7 @@
       title: 'Craft your email masterpieces',
       text: 'Here, you can effortlessly create, customize, and track your email communications.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -400,7 +461,7 @@
       title: 'Your multi-channel messaging hub',
       text: 'This is your go-to destination for crafting and managing personalized marketing messages across various channels at once. It allows you organize the sending for SMS, email, social media, and push notifications.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -420,7 +481,7 @@
       title: 'Capture attention with focus items',
       text: "Focus items allow you to create pop-ups, modals, and banners designed to capture your visitors' attention and encourage specific actions, such as subscribing to a newsletter or completing a form.",
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -440,7 +501,7 @@
       title: 'Manage your digital treasures',
       text: 'This is your central hub for managing all digital assets used in your marketing campaigns.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -460,7 +521,7 @@
       title: 'Design your data collection tools',
       text: 'Here, you can create and manage forms to capture valuable customer data effectively.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -480,7 +541,7 @@
       title: 'Create compelling landing pages',
       text: "This is where you can design, customize, and optimize your landing pages with ease. Using Mautic's intuitive drag-and-drop builder, you can effortlessly add images, forms, and CTAs to capture leads and boost conversions.",
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -500,7 +561,7 @@
       title: 'Personalize your content dynamically',
       text: 'Here, you can craft personalized experiences for your audience by delivering tailored content based on user behavior and preferences. Customize website content, emails, and landing pages dynamically to ensure each visitor receives relevant and engaging messages.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -520,7 +581,7 @@
       title: 'Set up automated responses',
       text: 'Here, you can define and automate responses to user interactions within your marketing campaigns. Set up actions like sending follow-up emails, adjusting lead scores, or adding contacts to segments based on predefined conditions and triggers.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -540,7 +601,7 @@
       title: 'Configure your marketing triggers',
       text: 'Automate smaller workflows by configuring actions that respond to user behavior and events. These triggers activate based on interactions such as form submissions, email opens, or page visits, streamlining your marketing processes.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -560,7 +621,7 @@
       title: 'Organize your point strategies',
       text: "Groups allow you to organize separate amount of points. They're useful to have control over strategies targeting several audiences and help you to differentiate engagement metrics for each.",
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -580,7 +641,7 @@
       title: 'Map out your customer journey',
       text: 'Here, you can define and manage the various stages of the customer lifecycle, from initial contact to post-purchase engagement. By organizing leads into distinct stages, you can implement targeted marketing strategies, personalize communications, and analyze progression through the marketing funnel.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -600,7 +661,7 @@
       title: 'Gain insights from your data',
       text: 'This section enables you to create, customize, and analyze a wide range of reports. Track key metrics such as campaign effectiveness, email engagement, lead generation, and more to gain valuable insights into your marketing performance.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -620,7 +681,7 @@
       title: 'Organize contacts with tags',
       text: 'Tags are customizable labels you can apply to contacts within Mautic. They help streamline segmentation and targeted marketing. Here, you can create, edit, and manage tags, making it easier to filter and search for specific groups of contacts.',
       attachTo: {
-        element: '.pull-left.page-header-title',
+        element: pageTitle,
         on: 'right'
       },
       buttons: [
@@ -788,20 +849,22 @@
   };
 
   /**
- * Waits for an element matching the selector to appear in the DOM.
+ * Waits for a visible element to appear in the DOM.
  *
- * @param {string} selector - CSS selector for the element.
+ * @param {string|function(): (Element|null)} target - CSS selector, or a resolver built with firstVisible().
  * @param {number} [delay=0] - Optional delay in milliseconds before checking for the element.
  * @returns {Promise<Object>} Promise resolving to the mQuery object of the found element.
  *
  * Handles dynamically loaded content in Mautic pages like importing contacts.
  */
-  function lazyElement(selector, delay = 0) {
+  function lazyElement(target, delay = 0) {
+    const find = typeof target === 'function' ? target : firstVisible(target);
+
     return new Promise((resolve) => {
       const checkElement = () => {
-        const element = mQuery(selector);
-        if (element.length) {
-          resolve(element);
+        const element = find();
+        if (element) {
+          resolve(mQuery(element));
           return true;
         }
         return false;
@@ -818,10 +881,13 @@
           }
         });
 
-        // Start observing the document body for added/removed nodes
+        // Start observing the document body for added/removed nodes, and for
+        // class/style changes that reveal an element which is already in the DOM
         observer.observe(document.body, {
           childList: true,
-          subtree: true
+          subtree: true,
+          attributes: true,
+          attributeFilter: ['class', 'style', 'hidden']
         });
       };
 
