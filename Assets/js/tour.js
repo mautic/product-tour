@@ -111,26 +111,27 @@
    * From Mautic 7.2 the tracking code has two tabs. Switching tab hides the one the
    * step is attached to, so the step is shown again to pick up the visible tab.
    *
-   * @param {MouseEvent} event
+   * Runs on Bootstrap's `shown.bs.tab` event, which fires once the switch has
+   * finished, whether it was made with the mouse or the keyboard.
+   *
+   * @param {Event} event
    */
   function followTrackingSnippetTab(event) {
     const tabSelector = '[href^="#tracking-snippet"], [data-bs-target^="#tracking-snippet"], [data-target^="#tracking-snippet"]';
-    if (!(event.target instanceof Element) || !event.target.closest(tabSelector)) {
+    if (!(event.target instanceof Element) || !event.target.matches(tabSelector)) {
       return;
     }
 
-    // Give the tab time to switch before checking what is visible.
-    setTimeout(() => {
-      const step = window.currentTour && window.currentTour.getCurrentStep();
-      if (!step || step.id !== 'config2') {
-        return;
-      }
+    const tour = window.currentTour;
+    const step = tour && tour.isActive() && tour.getCurrentStep();
+    if (!step || step.id !== 'config2') {
+      return;
+    }
 
-      const target = step.getTarget();
-      if (!target || target.getClientRects().length === 0) {
-        window.currentTour.show('config2');
-      }
-    }, 400);
+    const target = step.getTarget();
+    if (!target || target.getClientRects().length === 0) {
+      tour.show('config2');
+    }
   }
 
   /**
@@ -287,13 +288,16 @@
         { text: 'Next', action: () => window.currentTour.next() }
       ],
       beforeShowPromise: () => {
-        // Using lazyElement with a 400ms delay
-        return lazyElement(trackingSnippet, 400);
+        // Allow 400ms for the tracking settings tab to open. When the code is
+        // already showing there is nothing to wait for, and waiting would let the
+        // step appear after the tour had been closed in the meantime.
+        return lazyElement(trackingSnippet, trackingSnippet() ? 0 : 400);
       },
       when: {
-        show: () => document.addEventListener('click', followTrackingSnippetTab),
-        hide: () => document.removeEventListener('click', followTrackingSnippetTab),
-        destroy: () => document.removeEventListener('click', followTrackingSnippetTab),
+        // Bootstrap 3 (up to Mautic 7) only triggers this event through jQuery.
+        show: () => mQuery(document).on('shown.bs.tab', followTrackingSnippetTab),
+        hide: () => mQuery(document).off('shown.bs.tab', followTrackingSnippetTab),
+        destroy: () => mQuery(document).off('shown.bs.tab', followTrackingSnippetTab),
       },
     },
     {
