@@ -106,6 +106,34 @@
   }
 
   /**
+   * Keeps the tracking step on the code that is showing.
+   *
+   * From Mautic 7.2 the tracking code has two tabs. Switching tab hides the one the
+   * step is attached to, so the step is shown again to pick up the visible tab.
+   *
+   * @param {MouseEvent} event
+   */
+  function followTrackingSnippetTab(event) {
+    const tabSelector = '[href^="#tracking-snippet"], [data-bs-target^="#tracking-snippet"], [data-target^="#tracking-snippet"]';
+    if (!(event.target instanceof Element) || !event.target.closest(tabSelector)) {
+      return;
+    }
+
+    // Give the tab time to switch before checking what is visible.
+    setTimeout(() => {
+      const step = window.currentTour && window.currentTour.getCurrentStep();
+      if (!step || step.id !== 'config2') {
+        return;
+      }
+
+      const target = step.getTarget();
+      if (!target || target.getClientRects().length === 0) {
+        window.currentTour.show('config2');
+      }
+    }, 400);
+  }
+
+  /**
    * Steps which can only be resumed when their target is available.
    *
    * Each entry maps a step id to a check that receives the current path. When the
@@ -261,6 +289,11 @@
       beforeShowPromise: () => {
         // Using lazyElement with a 400ms delay
         return lazyElement(trackingSnippet, 400);
+      },
+      when: {
+        show: () => document.addEventListener('click', followTrackingSnippetTab),
+        hide: () => document.removeEventListener('click', followTrackingSnippetTab),
+        destroy: () => document.removeEventListener('click', followTrackingSnippetTab),
       },
     },
     {
