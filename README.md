@@ -31,7 +31,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/e
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/lepi-dozni"><img src="https://avatars.githubusercontent.com/u/123205844?v=4&size=100" width="100px" height="100px" alt="lepi-dozni"/><br /><sub><b>lepi-dozni</b></sub></a><br /><a href="https://github.com/mautic/product-tour/commits?author=lepi-dozni" title="Code">💻</a></td>
-      <td align="center" valign="top" width="14.28%"><a href="https://tendence.ru/zlobin"><img src="https://avatars.githubusercontent.com/u/186687229?v=4&size=100" width="100px" height="100px" alt="Alexander Zlobin"/><br /><sub><b>Alexander Zlobin</b></sub></a><br /><a href="https://github.com/mautic/product-tour/pulls?q=is%3Apr+reviewed-by%3AAlexanderZlobinM1" title="Reviewed Pull Requests">👀</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://tendence.ru/zlobin"><img src="https://avatars.githubusercontent.com/u/186687229?v=4&size=100" width="100px" height="100px" alt="Alexander Zlobin"/><br /><sub><b>Alexander Zlobin</b></sub></a><br /><a href="https://github.com/mautic/product-tour/pulls?q=is%3Apr+reviewed-by%3AAlexanderZlobinM1" title="Reviewed Pull Requests">👀</a> <a href="#translation-AlexanderZlobinM1" title="Translation">🌍</a></td>
     </tr>
   </tbody>
 </table>
